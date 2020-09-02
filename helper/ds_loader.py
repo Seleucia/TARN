@@ -132,19 +132,24 @@ class dsLoader():
 
     def get_batch(self,bsize,uidx,stream_mode=0):
         nsample_per_batch=self.kshot
+        nclass_to_be_used=2
         if stream_mode==0:
-            sel_alist=random.sample(self.train_classes, self.nclass)
-            S_kys=[]
-            Q_kys=[]
-            for aidx,aname in enumerate(sel_alist):
+            S_pos_kys = []
+            S_neg_kys = []
+            Q_kys = []
+            sel_alist=random.sample(self.train_classes, self.nclass+1)
+            poss_aname=sel_alist[0] #First one positive samples.
+            kys_lst = self.train_action_samples[poss_aname]
+            sel_kys = random.sample(kys_lst, nsample_per_batch * 2)
+            S_pos_kys=sel_kys[:nsample_per_batch]
+            Q_kys = sel_kys[nsample_per_batch:]
+
+            #get negative ones
+            for aidx,aname in enumerate(sel_alist[1:]):
                 kys_lst=self.train_action_samples[aname]
-                if aidx==0:
-                    sel_kys=random.sample(kys_lst, nsample_per_batch*2)
-                    S_kys.append(sel_kys[:nsample_per_batch])
-                    Q_kys=sel_kys[nsample_per_batch:]
-                else:
-                    sel_kys = random.sample(kys_lst, nsample_per_batch)
-                    S_kys.append(sel_kys)
+                sel_kys = random.sample(kys_lst, 1)[0]
+                S_neg_kys.append(sel_kys)
+
             sample_set=self.train_samples
         elif stream_mode==1: #data stream for training
             sample_set = self.kshot_set_train
@@ -154,14 +159,11 @@ class dsLoader():
             batch_kys=list(sample_set.keys())[bsize*uidx:bsize*(uidx+1)]
 
         c3d_feat_Q,anames_Q,lns_Q=self.get_by_kylst(Q_kys, sample_set)
-        c3d_feat_S=[]; anames_S=[]; lns_S=[]
-        for nidx in range(self.nclass):
-            c3d_feat_kshot_S,anames_kshot_S,lns_kshot_S=self.get_by_kylst(S_kys[nidx], sample_set)
-            c3d_feat_S.append(c3d_feat_kshot_S)
-            anames_S.append(anames_kshot_S)
-            lns_S.append(lns_kshot_S)
+        c3d_feat_S_pos,anames_S_pos,lns_S_pos=self.get_by_kylst(S_pos_kys, sample_set)
+        c3d_feat_S_neg,anames_S_neg,lns_S_neg=self.get_by_kylst(S_neg_kys, sample_set)
 
-        return c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S,anames_S,lns_S
+
+        return c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg
 
 
 

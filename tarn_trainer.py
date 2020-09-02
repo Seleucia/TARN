@@ -16,7 +16,7 @@ import h5py
 #CUDA_VISIBLE_DEVICES=0 python3 train_svg_lp_drivesim.py
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1986, help='Random seed')
-parser.add_argument('--nupdate', type=int, default=500000, help='Random seed')
+parser.add_argument('--nupdate', type=int, default=1000000, help='Random seed')
 parser.add_argument('--bsize', type=int, default=5, help='Batch Size')
 parser.add_argument('--feats_gru_hidden_size', type=int, default=256, help='hidden size')
 parser.add_argument('--dml_gru_hidden_size', type=int, default=256, help='hidden size')
@@ -49,24 +49,18 @@ criterion = nn.BCELoss()
 
 #ds_mode=0 TRAINING
 # --------- training funtions ------------------------------------
-def train(S,S_batch_ln,Q,Q_batch_ln,target_ones,target_zeros,uidx):
+def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
     mdl_tarn.train()
     mm_opt.zero_grad()
-    loss = 0
-    neg_loss = 0
-    pos_loss = 0
-    A, q_kc = mdl_tarn(S, S_batch_ln, Q, Q_batch_ln, )
-    for nc in range(2):
-    # for nc in range(opt.nclass):
-        if nc==0:
-            pos_loss += criterion(q_kc[nc], target_ones)
-        else:
-            neg_loss += criterion(q_kc[nc], target_zeros)
-        # loss += ut.CrossEntropy(q_kc, y=1)
+
+    q_kc_pos, q_kc_neg= mdl_tarn(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
+    pos_loss = criterion(q_kc_pos, target_ones)
+    neg_loss = criterion(q_kc_neg, target_zeros)
     loss=neg_loss+pos_loss
     loss.backward()
     mm_opt.step()
-    return neg_loss,pos_loss,0
+    acc=(q_kc_pos>0.5).cpu().numpy().mean()+(neg_loss<=0.5).cpu().numpy().mean()
+    return neg_loss,pos_loss,acc
 
 
 writer = SummaryWriter(iot.get_wd()+'/runs/mdl')
@@ -74,10 +68,11 @@ writer.add_text('DataSet', 'Training Samples:{0}'.format(len(dsL.train_samples))
 writer.add_text('DataSet', 'Test Samples:{0}'.format(len(dsL.test_samples)))
 print('Training Stated....')
 moving_avg_loss=[]
+moving_avg_prec=[]
 target_zeros = torch.zeros((opt.bsize, 1)).cuda()
 target_ones = torch.ones((opt.bsize, 1)).cuda()
 for uidx in range(opt.nupdate):
-    c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S,anames_S,lns_S = dsL.get_batch(opt.bsize,uidx,stream_mode=0)
+    c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=0)
     # print(c3d_feat_Q.shape,c3d_feat_S.shape)
 
     # S_batch_ln=[len(s) for s in S_batch]
@@ -86,8 +81,9 @@ for uidx in range(opt.nupdate):
     # Q = torch.nn.utils.rnn.pad_sequence(Q_batch).permute(1,0,2)
     # S_mask = (S != 0)
     # Q_mask = (Q != 0)
-    neg_loss,pos_loss,prec1=train(c3d_feat_S,lns_S,c3d_feat_Q,lns_Q,target_ones,target_zeros,uidx)
-    moving_avg_loss.append([pos_loss.item(),neg_loss.item(),])
+    neg_loss,pos_loss,prec1=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
+    moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
+    moving_avg_prec.append(prec1)
     if uidx%1000==0:
         writer.add_scalar('Loss/Train_pos',
                       np.mean(moving_avg_loss,0)[0],
@@ -97,9 +93,13 @@ for uidx in range(opt.nupdate):
                       np.mean(moving_avg_loss,0)[1],
                       uidx)
 
-        print('Upd: {0}| Loss Train pos/neg: {1} / {2}'.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1]))
+        writer.add_scalar('Loss/Train_acc',
+                      np.mean(moving_avg_prec,0),
+                      uidx)
+
+        print('Upd: {0}| Loss Train pos/neg: {1} / {2}, acc: {3}'.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],np.mean(moving_avg_prec,0)))
         moving_avg_loss = []
-    if uidx%10000==0:
+    if uidx%50000==0:
         mhe.save_model(uidx,opt,mdl_tarn,mm_opt)
 writer.close()
 
