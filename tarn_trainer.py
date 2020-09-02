@@ -38,12 +38,6 @@ mdl_tarn=m_tarn(opt.input_size,opt.feats_gru_hidden_size,opt.dml_gru_hidden_size
 mm_opt=optim.Adam(mdl_tarn.parameters(), lr=opt.lr, weight_decay=opt.wd)
 
 
-
-N = 11;
-M = 13;
-
-
-
 criterion = nn.BCELoss()
 
 
@@ -73,18 +67,11 @@ target_zeros = torch.zeros((opt.bsize, 1)).cuda()
 target_ones = torch.ones((opt.bsize, 1)).cuda()
 for uidx in range(opt.nupdate):
     c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=0)
-    # print(c3d_feat_Q.shape,c3d_feat_S.shape)
 
-    # S_batch_ln=[len(s) for s in S_batch]
-    # Q_batch_ln=[len(q) for q in Q_batch]
-    # S = torch.nn.utils.rnn.pad_sequence(S_batch).permute(1,0,2)
-    # Q = torch.nn.utils.rnn.pad_sequence(Q_batch).permute(1,0,2)
-    # S_mask = (S != 0)
-    # Q_mask = (Q != 0)
     neg_loss,pos_loss,prec1=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
     moving_avg_prec.append(prec1)
-    if uidx%1000==0:
+    if uidx%5000==0:
         writer.add_scalar('Loss/Train_pos',
                       np.mean(moving_avg_loss,0)[0],
                       uidx)
