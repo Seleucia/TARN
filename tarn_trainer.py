@@ -77,8 +77,6 @@ moving_avg_loss=[]
 target_zeros = torch.zeros((opt.bsize, 1)).cuda()
 target_ones = torch.ones((opt.bsize, 1)).cuda()
 for uidx in range(opt.nupdate):
-    S_batch=[torch.randn(np.random.choice(range(N-5,N)), opt.input_size) for n in range(opt.bsize)]
-    Q_batch=[torch.randn(np.random.choice(range(M-5,M)), opt.input_size) for n in range(opt.bsize)]
     c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S,anames_S,lns_S = dsL.get_batch(opt.bsize,uidx,stream_mode=0)
     # print(c3d_feat_Q.shape,c3d_feat_S.shape)
 
@@ -90,7 +88,7 @@ for uidx in range(opt.nupdate):
     # Q_mask = (Q != 0)
     neg_loss,pos_loss,prec1=train(c3d_feat_S,lns_S,c3d_feat_Q,lns_Q,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item(),])
-    if uidx%10==0:
+    if uidx%1000==0:
         writer.add_scalar('Loss/Train_pos',
                       np.mean(moving_avg_loss,0)[0],
                       uidx)
@@ -101,7 +99,7 @@ for uidx in range(opt.nupdate):
 
         print('Upd: {0}| Loss Train pos/neg: {1} / {2}'.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1]))
         moving_avg_loss = []
-    if uidx%5000==0:
+    if uidx%10000==0:
         mhe.save_model(uidx,opt,mdl_tarn,mm_opt)
 writer.close()
 
