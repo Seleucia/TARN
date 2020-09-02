@@ -10,7 +10,7 @@ def get_wd():
     if socket.gethostname() == 'coskunh':
       data_folder='/media/hc/Data/all/PycharmProjects/TARN'
     elif socket.gethostname() == 'wscskn':
-        data_folder = '/home/cskn/PycharmProjects/TARN'
+        data_folder = '/home/cskn/PycharmProjects/TARN/'
     return data_folder
 
 def get_c3d_feats_hdf5():

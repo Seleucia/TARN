@@ -24,7 +24,7 @@ parser.add_argument('--input_size', type=int, default=4096, help='hidden size')
 parser.add_argument('--inp_s', type=int, default=4096, help='hidden size')
 parser.add_argument('--nclass', type=int, default=5, help='hidden size')
 parser.add_argument('--kshot', type=int, default=10, help='hidden size')
-parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
+parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate')
 parser.add_argument('--wd', type=float, default=0.0005, help='W. Decay')
 opt = parser.parse_args()
 
