@@ -1,0 +1,25 @@
+data/
+models/
+runs/mdl/
+classifier_mdl/runs/
+.idea/
+_pycache__/
+
+*.pickle
+*.pkl
+*.pth
+*.pyc
+*.hdf5
+
+# image:
+*.png
+*.jpeg
+*.pt
+*.json
+*.gz
+*.npy
+*.npz
+*.gif
+*.pth
+*.zip
+
