@@ -62,15 +62,18 @@ class dsLoader():
                             self.test_action_samples[aname] = []
                         self.test_action_samples[aname].append(seq_ky)
 
-            print('Number of samples per class')
+            for aname in self.test_action_samples:
+                if len(self.test_action_samples[aname]) <self.kshot+1:
+                    print('We are deleting {0} due to insufficent number of samples: {1}, kshot: {2}'.format(aname,len(self.test_action_samples[aname]),self.kshot))
+                    del self.test_action_samples[aname]
+            self.test_aname_cnt={aname:len(self.test_action_samples[aname]) for aname in self.test_action_samples}
             print([len(self.test_action_samples[aname]) for aname in self.test_action_samples])
 
     def kshot_sample_set(self):
         random.seed(self.kshot_seed)
         self.kshot_set_train = {}
         self.kshot_set_test = {}
-        test_keys= list(self.test_samples.keys())
-        random.shuffle(test_keys)
+
         self.kshot_class_set=random.sample(self.test_classes,self.nclass)
         self.kshot_train_action_samples={}
         self.kshot_test_action_samples={}
@@ -149,7 +152,7 @@ class dsLoader():
                 S_neg_kys.append(sel_kys)
             sample_set=self.train_samples
         elif stream_mode==1: #data stream for training
-            sample_set = self.kshot_set_train
+            sample_set = self.test_samples
             batch_kys = list(sample_set.keys())[bsize * uidx:bsize * (uidx + 1)]
         elif stream_mode==2: #data stream for test
             sample_set = self.kshot_set_test
