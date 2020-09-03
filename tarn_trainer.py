@@ -51,7 +51,7 @@ def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,tar
     loss.backward()
     mm_opt.step()
     pos_acc=(q_kc_pos>0.5).cpu().numpy().mean()
-    neg_acc=(neg_loss<=0.5).cpu().numpy().mean()
+    neg_acc=(q_kc_neg<=0.5).cpu().numpy().mean()
     return neg_loss,pos_loss,neg_acc,pos_acc
 
 
