@@ -24,7 +24,7 @@ parser.add_argument('--input_size', type=int, default=4096, help='hidden size')
 parser.add_argument('--inp_s', type=int, default=4096, help='hidden size')
 parser.add_argument('--nclass', type=int, default=5, help='hidden size')
 parser.add_argument('--kshot', type=int, default=10, help='hidden size')
-parser.add_argument('--lr', type=float, default=0.00005, help='Learning rate')
+parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate')
 parser.add_argument('--wd', type=float, default=0.0005, help='W. Decay')
 opt = parser.parse_args()
 
@@ -53,7 +53,7 @@ def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,tar
     loss=neg_loss+pos_loss
     loss.backward()
     mm_opt.step()
-    acc=(q_kc_pos>0.5).cpu().numpy().mean()+(neg_loss<=0.5).cpu().numpy().mean()
+    acc=(q_kc_pos>0.5).cpu().numpy().mean()/2.0+(neg_loss<=0.5).cpu().numpy().mean()/2.0
     return neg_loss,pos_loss,acc
 
 
