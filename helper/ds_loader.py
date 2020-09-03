@@ -62,12 +62,14 @@ class dsLoader():
                             self.test_action_samples[aname] = []
                         self.test_action_samples[aname].append(seq_ky)
 
-            for aname in self.test_action_samples:
-                if len(self.test_action_samples[aname]) <self.kshot+1:
-                    print('We are deleting {0} due to insufficent number of samples: {1}, kshot: {2}'.format(aname,len(self.test_action_samples[aname]),self.kshot))
-                    del self.test_action_samples[aname]
-            self.test_aname_cnt={aname:len(self.test_action_samples[aname]) for aname in self.test_action_samples}
-            print([len(self.test_action_samples[aname]) for aname in self.test_action_samples])
+
+        aname_lst=list(self.test_action_samples.keys())
+        for aname in aname_lst:
+            if len(self.test_action_samples[aname]) <self.kshot+1:
+                print('We are deleting {0} due to insufficent number of samples: {1}, kshot: {2}'.format(aname,len(self.test_action_samples[aname]),self.kshot))
+                del self.test_action_samples[aname]
+        self.test_aname_cnt={aname:len(self.test_action_samples[aname]) for aname in self.test_action_samples}
+        print([len(self.test_action_samples[aname]) for aname in self.test_action_samples])
 
     def kshot_sample_set(self):
         random.seed(self.kshot_seed)
