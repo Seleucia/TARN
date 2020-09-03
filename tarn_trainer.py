@@ -64,7 +64,7 @@ moving_avg_prec=[]
 target_zeros = torch.zeros((opt.bsize, 1)).cuda()
 target_ones = torch.ones((opt.bsize, 1)).cuda()
 for uidx in range(opt.nupdate):
-    c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=0)
+    c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=2)
     neg_loss,pos_loss,neg_acc,pos_acc=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
     moving_avg_prec.append([pos_acc,neg_acc])
@@ -83,7 +83,7 @@ for uidx in range(opt.nupdate):
         writer.add_scalar('Loss/Train_neg_acc',
                       np.mean(moving_avg_prec,0)[1],
                       uidx)
-        print('Upd: {0}| Loss Train pos/neg: {1} / {2}, acc: {3} / {4} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
+        print('Upd: {0}| Loss Train pos/neg  Loss: {1} / {2}, acc: {3} / {4} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
                                                                                 np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
         moving_avg_loss = []
     if uidx%100000==0:
