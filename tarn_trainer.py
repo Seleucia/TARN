@@ -40,13 +40,10 @@ mm_opt=optim.Adam(mdl_tarn.parameters(), lr=opt.lr, weight_decay=opt.wd)
 
 criterion = nn.BCELoss()
 
-
-#ds_mode=0 TRAINING
 # --------- training funtions ------------------------------------
 def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
     mdl_tarn.train()
     mm_opt.zero_grad()
-
     q_kc_pos, q_kc_neg= mdl_tarn(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     pos_loss = criterion(q_kc_pos, target_ones)
     neg_loss = criterion(q_kc_neg, target_zeros)
@@ -67,7 +64,6 @@ target_zeros = torch.zeros((opt.bsize, 1)).cuda()
 target_ones = torch.ones((opt.bsize, 1)).cuda()
 for uidx in range(opt.nupdate):
     c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=0)
-
     neg_loss,pos_loss,prec1=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
     moving_avg_prec.append(prec1)
