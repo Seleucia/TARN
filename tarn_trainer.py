@@ -57,18 +57,18 @@ def test():
     print('Test Acc: {0}'.format(np.mean(dic_results)))
 
 
-def finetune():
+def finetune(uidx):
     print('Fine tuning model.....')
     moving_avg_loss=[]
     for fuidx in range(1000):
         c3d_feat_Q, anames_Q, lns_Q, Q_kys, c3d_feat_S_pos, anames_S_pos, lns_S_pos, c3d_feat_S_neg, anames_S_neg, lns_S_neg = dsL.get_batch(
-            opt.bsize, fuidx, stream_mode=0)
+            opt.bsize, fuidx, stream_mode=2)
         neg_loss, pos_loss, neg_acc, pos_acc = train(c3d_feat_Q, lns_Q, c3d_feat_S_pos, lns_S_pos, c3d_feat_S_neg,
                                                      lns_S_neg, target_ones, target_zeros, fuidx)
         moving_avg_loss.append([pos_loss.item(), neg_loss.item()])
         moving_avg_prec.append([pos_acc, neg_acc])
 
-    print('Upd: {0}| Loss Train pos/neg  Loss: {1} / {2}, acc: {3} / {4} '.format(uidx,
+    print('Fine-Tuned: {0}| Loss Train pos/neg  Loss: {1} / {2}, acc: {3} / {4} '.format(uidx,
                                                                                   np.mean(moving_avg_loss, 0)[
                                                                                       0],
                                                                                   np.mean(moving_avg_loss, 0)[
@@ -131,7 +131,7 @@ for uidx in range(opt.nupdate):
         moving_avg_loss = []
     if uidx % 100000 == 0:
         #We should save and reaload model.
-        finetune()
+        finetune(uidx)
         test()
     if uidx%100000==0:
         mhe.save_model(uidx,opt,mdl_tarn,mm_opt)
