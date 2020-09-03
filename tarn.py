@@ -61,4 +61,4 @@ class TARN(nn.Module):
         Q_m,_ = self.embed_gru(c3d_feat_Q, lns_Q)
         S_m,_ = self.embed_gru(c3d_feat_S, lns_S)
         q_kc=self.align_and_computelogits(Q_m,S_m)
-        return q_kc,
+        return q_kc
