@@ -56,11 +56,9 @@ class TARN(nn.Module):
         q_kc = torch.sigmoid(q_kc)
         return q_kc
 
-    def forward(self, c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
+    def forward(self, c3d_feat_Q,lns_Q,c3d_feat_S,lns_S):
+    # def forward(self, c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
         Q_m,_ = self.embed_gru(c3d_feat_Q, lns_Q)
-        S_pos_m,_ = self.embed_gru(c3d_feat_S_pos, lns_S_pos)
-        S_neg_m,_ = self.embed_gru(c3d_feat_S_neg, lns_S_neg)
-        q_kc_neg=self.align_and_computelogits(Q_m,S_pos_m)
-        q_kc_pos=self.align_and_computelogits(Q_m,S_neg_m)
-
-        return q_kc_pos,q_kc_neg
+        S_m,_ = self.embed_gru(c3d_feat_S, lns_S)
+        q_kc=self.align_and_computelogits(Q_m,S_m)
+        return q_kc,

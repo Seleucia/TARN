@@ -44,7 +44,8 @@ criterion = nn.BCELoss()
 def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
     mdl_tarn.train()
     mm_opt.zero_grad()
-    q_kc_pos, q_kc_neg= mdl_tarn(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
+    q_kc_pos =mdl_tarn(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos)
+    q_kc_neg =mdl_tarn(c3d_feat_Q,lns_Q,c3d_feat_S_neg,lns_S_neg)
     pos_loss = criterion(q_kc_pos, target_ones)
     neg_loss = criterion(q_kc_neg, target_zeros)
     loss=neg_loss+pos_loss
@@ -68,7 +69,7 @@ for uidx in range(opt.nupdate):
     neg_loss,pos_loss,neg_acc,pos_acc=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
     moving_avg_prec.append([pos_acc,neg_acc])
-    if uidx%10000==0:
+    if uidx%1000==0:
         writer.add_scalar('Loss/Train_pos',
                       np.mean(moving_avg_loss,0)[0],
                       uidx)

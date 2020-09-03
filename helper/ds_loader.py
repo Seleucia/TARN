@@ -156,6 +156,31 @@ class dsLoader():
                    sel_kys = random.sample(kys_lst, 1)[0]
                    S_neg_kys.append(sel_kys)
 
+        elif stream_mode==3: #data stream for test
+            sample_set = self.test_samples
+            S_pos_kys = []
+            S_neg_kys = []
+            Q_kys = []
+            sel_alist = self.kshot_class_set
+            poss_aname = sel_alist[0]  # First one positive samples.
+            kys_lst = self.kshot_train_action_samples[poss_aname]
+            for kidx in range(self.kshot):
+                sel_kys = random.sample(kys_lst, 2)
+                S_pos_kys.append(sel_kys[0])
+                Q_kys.append(sel_kys[1])
+
+            for aidx,aname in enumerate(sel_alist[1:]):
+                kys_lst=self.kshot_train_action_samples[aname]
+                sel_kys = random.sample(kys_lst, 1)[0]
+                S_neg_kys.append(sel_kys)
+            if len(S_neg_kys)<self.kshot:
+               nmissing=self.kshot-len(S_neg_kys)
+               for mis_idx in range(nmissing):
+                   aname=random.sample(sel_alist[1:],1)[0]
+                   kys_lst = self.kshot_train_action_samples[aname]
+                   sel_kys = random.sample(kys_lst, 1)[0]
+                   S_neg_kys.append(sel_kys)
+
         c3d_feat_Q,anames_Q,lns_Q=self.get_by_kylst(Q_kys, sample_set)
         c3d_feat_S_pos,anames_S_pos,lns_S_pos=self.get_by_kylst(S_pos_kys, sample_set)
         c3d_feat_S_neg,anames_S_neg,lns_S_neg=self.get_by_kylst(S_neg_kys, sample_set)
