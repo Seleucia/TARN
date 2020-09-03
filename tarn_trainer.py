@@ -53,9 +53,30 @@ def test():
             mean_score=q_kc.detach().cpu().numpy().mean()
             dic_score[aname]=mean_score
         prediction=sorted(dic_score.items(), key=lambda x: x[1], reverse=True)[0][0]
-        print(prediction,anames_Q[0])
+        dic_results[prediction==anames_Q[0]]
     print('Test Acc: {0}'.format(np.mean(dic_results)))
-    print('Done..')
+
+
+def finetune():
+    moving_avg_loss=[]
+    for fuidx in range(1000):
+        c3d_feat_Q, anames_Q, lns_Q, Q_kys, c3d_feat_S_pos, anames_S_pos, lns_S_pos, c3d_feat_S_neg, anames_S_neg, lns_S_neg = dsL.get_batch(
+            opt.bsize, fuidx, stream_mode=0)
+        neg_loss, pos_loss, neg_acc, pos_acc = train(c3d_feat_Q, lns_Q, c3d_feat_S_pos, lns_S_pos, c3d_feat_S_neg,
+                                                     lns_S_neg, target_ones, target_zeros, fuidx)
+        moving_avg_loss.append([pos_loss.item(), neg_loss.item()])
+        moving_avg_prec.append([pos_acc, neg_acc])
+
+    print('Upd: {0}| Loss Train pos/neg  Loss: {1} / {2}, acc: {3} / {4} '.format(uidx,
+                                                                                  np.mean(moving_avg_loss, 0)[
+                                                                                      0],
+                                                                                  np.mean(moving_avg_loss, 0)[
+                                                                                      1],
+                                                                                  np.mean(moving_avg_prec, 0)[
+                                                                                      0],
+                                                                                  np.mean(moving_avg_prec, 0)[
+                                                                                      1]))
+
 
 
 # --------- training funtions ------------------------------------
@@ -89,7 +110,7 @@ for uidx in range(opt.nupdate):
     neg_loss,pos_loss,neg_acc,pos_acc=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
     moving_avg_prec.append([pos_acc,neg_acc])
-    if uidx%1000==0:
+    if uidx%10000==0:
         writer.add_scalar('Loss/Train_pos',
                       np.mean(moving_avg_loss,0)[0],
                       uidx)
@@ -107,6 +128,8 @@ for uidx in range(opt.nupdate):
         print('Upd: {0}| Loss Train pos/neg  Loss: {1} / {2}, acc: {3} / {4} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
                                                                                 np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
         moving_avg_loss = []
+    if uidx % 100000 == 0:
+        finetune()
         test()
     if uidx%100000==0:
         mhe.save_model(uidx,opt,mdl_tarn,mm_opt)
