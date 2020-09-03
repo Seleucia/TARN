@@ -64,10 +64,15 @@ class dsLoader():
 
 
         aname_lst=list(self.test_action_samples.keys())
+
         for aname in aname_lst:
             if len(self.test_action_samples[aname]) <self.kshot+1:
                 print('We are deleting {0} due to insufficent number of samples: {1}, kshot: {2}'.format(aname,len(self.test_action_samples[aname]),self.kshot))
+                tmp_seq_ky_lst = self.test_action_samples[aname]
+                for seq_ky in tmp_seq_ky_lst:
+                    del self.test_samples[seq_ky]
                 del self.test_action_samples[aname]
+
         self.test_aname_cnt={aname:len(self.test_action_samples[aname]) for aname in self.test_action_samples}
         print([len(self.test_action_samples[aname]) for aname in self.test_action_samples])
 
@@ -108,6 +113,29 @@ class dsLoader():
             ln_lst.append(c3d_feat.shape[0])
         c3d_feat_lst = torch.nn.utils.rnn.pad_sequence(c3d_feat_lst).permute(1, 0, 2).to(self.device)
         return c3d_feat_lst,aname_lst,ln_lst
+
+
+    def get_test_samples(self,aname,bidx,stream_mode=0):
+        nsample_per_batch = self.kshot
+        sample_set = self.test_samples
+        if stream_mode==0: #return support set
+            S_kys = self.kshot_train_action_samples[aname]
+            c3d_feat_S, anames_S, lns_S = self.get_by_kylst(S_kys, sample_set)
+            return c3d_feat_S, anames_S, lns_S
+        elif stream_mode==1: #return support set
+            tmp_Q_kys=self.kshot_test_action_samples[aname]
+            Q_kys=tmp_Q_kys[bidx*nsample_per_batch:(bidx+1)*nsample_per_batch]
+            if len(Q_kys) <nsample_per_batch:
+                nmissing = nsample_per_batch-len(Q_kys)
+                Q_kys.extend(random.sample(tmp_Q_kys,nmissing))
+            c3d_feat_Q, anames_Q, lns_Q = self.get_by_kylst(Q_kys, sample_set)
+            return c3d_feat_Q, anames_Q, lns_Q
+        elif stream_mode == 2:  # return support set
+            tmp_Q_kys=list(self.test_samples.keys())
+            Q_kys = tmp_Q_kys[bidx]
+            Q_kys=[Q_kys]*self.kshot
+            c3d_feat_Q, anames_Q, lns_Q = self.get_by_kylst(Q_kys, sample_set)
+            return c3d_feat_Q, anames_Q, lns_Q
 
     def get_batch(self,bsize,uidx,stream_mode=0):
         nsample_per_batch=self.kshot

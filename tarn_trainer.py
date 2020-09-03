@@ -40,6 +40,24 @@ mm_opt=optim.Adam(mdl_tarn.parameters(), lr=opt.lr, weight_decay=opt.wd)
 
 criterion = nn.BCELoss()
 
+def test():
+    mdl_tarn.eval()
+    aname_lst=dsL.kshot_class_set
+    dic_results=[]
+    for bidx in range(100):
+        c3d_feat_Q, anames_Q, lns_Q=dsL.get_test_samples('Nan',0,stream_mode=2)
+        dic_score={}
+        for aname in aname_lst:
+            c3d_feat_S, anames_S, lns_S=dsL.get_test_samples(aname,0,stream_mode=0)
+            q_kc = mdl_tarn(c3d_feat_Q, lns_Q, c3d_feat_S, lns_S)
+            mean_score=q_kc.detach().cpu().numpy().mean()
+            dic_score[aname]=mean_score
+        prediction=sorted(dic_score.items(), key=lambda x: x[1], reverse=True)[0][0]
+        dic_results.append(prediction==anames_Q[0])
+    print('Test Acc: {0}'.format(np.mean(dic_results)))
+    print('Done..')
+
+
 # --------- training funtions ------------------------------------
 def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
     mdl_tarn.train()
@@ -54,6 +72,8 @@ def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,tar
     pos_acc=(q_kc_pos>0.5).cpu().numpy().mean()
     neg_acc=(q_kc_neg<=0.5).cpu().numpy().mean()
     return neg_loss,pos_loss,neg_acc,pos_acc
+
+
 
 
 writer = SummaryWriter(iot.get_wd()+'/runs/mdl')
@@ -87,6 +107,7 @@ for uidx in range(opt.nupdate):
         print('Upd: {0}| Loss Train pos/neg  Loss: {1} / {2}, acc: {3} / {4} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
                                                                                 np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
         moving_avg_loss = []
+        test()
     if uidx%100000==0:
         mhe.save_model(uidx,opt,mdl_tarn,mm_opt)
 writer.close()

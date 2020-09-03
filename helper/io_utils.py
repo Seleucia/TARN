@@ -16,7 +16,7 @@ def get_wd():
 def get_c3d_feats_hdf5():
     if socket.gethostname() == 'coskunh':
         hdf_file = '/media/hc/Data/all/PycharmProjects/TARN/data/cnt-2000_c3d_features.hdf5'
-        hdf_file = '/media/hc/Data/all/PycharmProjects/TARN/data/cnt-28472_c3d_features.hdf5'
+        # hdf_file = '/media/hc/Data/all/PycharmProjects/TARN/data/cnt-28472_c3d_features.hdf5'
     elif socket.gethostname() == 'wscskn':
         hdf_file = '/mnt/4tb/tpami/c3d_feats_hlyr-7_sb-2/cnt-28472_c3d_features.hdf5'
     return hdf_file
