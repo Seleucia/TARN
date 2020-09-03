@@ -53,11 +53,12 @@ def test():
             mean_score=q_kc.detach().cpu().numpy().mean()
             dic_score[aname]=mean_score
         prediction=sorted(dic_score.items(), key=lambda x: x[1], reverse=True)[0][0]
-        dic_results[prediction==anames_Q[0]]
+        dic_results.append(prediction==anames_Q[0])
     print('Test Acc: {0}'.format(np.mean(dic_results)))
 
 
 def finetune():
+    print('Fine tuning model.....')
     moving_avg_loss=[]
     for fuidx in range(1000):
         c3d_feat_Q, anames_Q, lns_Q, Q_kys, c3d_feat_S_pos, anames_S_pos, lns_S_pos, c3d_feat_S_neg, anames_S_neg, lns_S_neg = dsL.get_batch(
@@ -129,6 +130,7 @@ for uidx in range(opt.nupdate):
                                                                                 np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
         moving_avg_loss = []
     if uidx % 100000 == 0:
+        #We should save and reaload model.
         finetune()
         test()
     if uidx%100000==0:
