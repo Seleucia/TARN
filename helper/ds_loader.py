@@ -96,31 +96,6 @@ class dsLoader():
             niter =  int(sample_set/bsize)+1
         return niter
 
-    def get_c3d_feats_batch(self,bsize,uidx,stream_mode=0):
-        if stream_mode==0:
-            batch_kys=random.sample(self.train_c3d_feats.keys(),bsize)
-            sample_set=self.train_c3d_feats
-        elif stream_mode==1: #data stream for training
-            sample_set = self.train_c3d_feats
-            batch_kys = list(sample_set.keys())[bsize * uidx:bsize * (uidx + 1)]
-        elif stream_mode==2: #data stream for training
-            sample_set = self.test_c3d_feats
-            batch_kys=list(sample_set.keys())[bsize*uidx:bsize*(uidx+1)]
-        if len(batch_kys)==0:
-            batch_kys=random.sample(sample_set.keys(),bsize)
-        if len(batch_kys)<bsize:
-            batch_kys.extend([batch_kys[-1]]*(bsize-len(batch_kys)))
-
-        c3d_feats_lst=[]
-        aname_lst=[]
-        prot_class_val_lst = []
-        for ky in batch_kys:
-            c3d_feat,prot_class_val, aname=sample_set[ky]
-            c3d_feats_lst.append(c3d_feat)
-            prot_class_val_lst.append(prot_class_val)
-            aname_lst.append(aname)
-        return torch.from_numpy(np.asarray(c3d_feats_lst)).to(self.device),torch.from_numpy(np.asarray(prot_class_val_lst)).to(self.device),aname_lst,batch_kys
-
     def get_by_kylst(self,kys,sample_set):
         c3d_feat_lst = []
         aname_lst = []
@@ -157,7 +132,7 @@ class dsLoader():
             sample_set = self.test_samples
             batch_kys = list(sample_set.keys())[bsize * uidx:bsize * (uidx + 1)]
         elif stream_mode==2: #data stream for test
-            sample_set = self.kshot_set_test
+            sample_set = self.test_samples
             S_pos_kys = []
             S_neg_kys = []
             Q_kys = []
