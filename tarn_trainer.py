@@ -44,7 +44,7 @@ def test():
     mdl_tarn.eval()
     aname_lst=dsL.kshot_class_set
     dic_results=[]
-    for bidx in range(100):
+    for bidx in range(len(dsL.test_samples)):
         c3d_feat_Q, anames_Q, lns_Q=dsL.get_test_samples('Nan',0,stream_mode=2)
         dic_score={}
         for aname in aname_lst:
@@ -53,7 +53,7 @@ def test():
             mean_score=q_kc.detach().cpu().numpy().mean()
             dic_score[aname]=mean_score
         prediction=sorted(dic_score.items(), key=lambda x: x[1], reverse=True)[0][0]
-        dic_results.append(prediction==anames_Q[0])
+        print(prediction,anames_Q[0])
     print('Test Acc: {0}'.format(np.mean(dic_results)))
     print('Done..')
 
@@ -85,7 +85,7 @@ moving_avg_prec=[]
 target_zeros = torch.zeros((opt.bsize, 1)).cuda()
 target_ones = torch.ones((opt.bsize, 1)).cuda()
 for uidx in range(opt.nupdate):
-    c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=2)
+    c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=0)
     neg_loss,pos_loss,neg_acc,pos_acc=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
     moving_avg_prec.append([pos_acc,neg_acc])
