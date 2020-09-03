@@ -50,8 +50,9 @@ def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,tar
     loss=neg_loss+pos_loss
     loss.backward()
     mm_opt.step()
-    acc=(q_kc_pos>0.5).cpu().numpy().mean()/2.0+(neg_loss<=0.5).cpu().numpy().mean()/2.0
-    return neg_loss,pos_loss,acc
+    pos_acc=(q_kc_pos>0.5).cpu().numpy().mean()
+    neg_acc=(neg_loss<=0.5).cpu().numpy().mean()
+    return neg_loss,pos_loss,neg_acc,pos_acc
 
 
 writer = SummaryWriter(iot.get_wd()+'/runs/mdl')
@@ -64,9 +65,9 @@ target_zeros = torch.zeros((opt.bsize, 1)).cuda()
 target_ones = torch.ones((opt.bsize, 1)).cuda()
 for uidx in range(opt.nupdate):
     c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=0)
-    neg_loss,pos_loss,prec1=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
+    neg_loss,pos_loss,neg_acc,pos_acc=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
-    moving_avg_prec.append(prec1)
+    moving_avg_prec.append([pos_acc,neg_acc])
     if uidx%5000==0:
         writer.add_scalar('Loss/Train_pos',
                       np.mean(moving_avg_loss,0)[0],
@@ -76,10 +77,14 @@ for uidx in range(opt.nupdate):
                       np.mean(moving_avg_loss,0)[1],
                       uidx)
 
-        writer.add_scalar('Loss/Train_acc',
-                      np.mean(moving_avg_prec,0),
+        writer.add_scalar('Loss/Train_pos_acc',
+                      np.mean(moving_avg_prec,0)[0],
                       uidx)
-        print('Upd: {0}| Loss Train pos/neg: {1} / {2}, acc: {3}'.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],np.mean(moving_avg_prec,0)))
+        writer.add_scalar('Loss/Train_neg_acc',
+                      np.mean(moving_avg_prec,0)[1],
+                      uidx)
+        print('Upd: {0}| Loss Train pos/neg: {1} / {2}, acc: {3} / {4} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
+                                                                                np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
         moving_avg_loss = []
     if uidx%50000==0:
         mhe.save_model(uidx,opt,mdl_tarn,mm_opt)

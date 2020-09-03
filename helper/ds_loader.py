@@ -37,8 +37,8 @@ class dsLoader():
         self.train_action_samples={}
         self.test_action_samples={}
         self.load_hdf(hdf_feats_file)
+        self.kshot_sample_set()
         print('Done...')
-        # self.kshot_sample_set()
 
     def load_hdf(self,hdf_prot_file):
         with h5py.File(hdf_prot_file, "r") as f:
@@ -68,12 +68,13 @@ class dsLoader():
         self.kshot_set_test = {}
         test_keys= list(self.test_samples.keys())
         random.shuffle(test_keys)
-        class_lst=random.sample(self.test_classes,self.nclass)
-        class_cnt_dic={cls:0 for cls in class_lst}
+        self.kshot_class_set=random.sample(self.test_classes,self.nclass)
+
+        class_cnt_dic={cls:0 for cls in self.kshot_class_set}
         for seq_ky  in self.test_samples:
             is_added = False
             c3d_vectors, aname =self.test_samples[seq_ky]
-            if aname in class_lst:
+            if aname in self.kshot_class_set:
                 if class_cnt_dic[aname] < self.kshot:
                     is_added = True
                     self.kshot_set_train[seq_ky] =[c3d_vectors, aname]
@@ -143,20 +144,24 @@ class dsLoader():
             sel_kys = random.sample(kys_lst, nsample_per_batch * 2)
             S_pos_kys=sel_kys[:nsample_per_batch]
             Q_kys = sel_kys[nsample_per_batch:]
-
             #get negative ones
             for aidx,aname in enumerate(sel_alist[1:]):
                 kys_lst=self.train_action_samples[aname]
                 sel_kys = random.sample(kys_lst, 1)[0]
                 S_neg_kys.append(sel_kys)
-
             sample_set=self.train_samples
         elif stream_mode==1: #data stream for training
             sample_set = self.kshot_set_train
             batch_kys = list(sample_set.keys())[bsize * uidx:bsize * (uidx + 1)]
-        elif stream_mode==2: #data stream for training
+        elif stream_mode==2: #data stream for test
             sample_set = self.kshot_set_test
-            batch_kys=list(sample_set.keys())[bsize*uidx:bsize*(uidx+1)]
+            S_pos_kys = []
+            S_neg_kys = []
+            Q_kys = []
+            sel_alist = self.kshot_class_set
+
+
+
 
         c3d_feat_Q,anames_Q,lns_Q=self.get_by_kylst(Q_kys, sample_set)
         c3d_feat_S_pos,anames_S_pos,lns_S_pos=self.get_by_kylst(S_pos_kys, sample_set)
