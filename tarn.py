@@ -7,8 +7,6 @@ class TARN(nn.Module):
         self.feats_n_layers = 1
         self.sim_type=sim_type
         self.feats_gru = nn.GRU(input_size, feats_gru_hidden_size, self.feats_n_layers, batch_first=True,bidirectional=True)
-
-
         if self.sim_type in ['Mult','Subt']:
             self.d = feats_gru_hidden_size*2
         elif self.sim_type=='EucCos':
@@ -59,18 +57,10 @@ class TARN(nn.Module):
         return q_kc
 
     def forward(self, c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
-        # S=self.feats_gru(feats_S)[0]
-        # Q=self.feats_gru(feats_Q)[0]
-        # S=[S[sidx, :s_ln, :] for sidx, s_ln in enumerate(feats_S_ln)]
-        # Q=[Q[qidx, :q_ln, :] for qidx, q_ln in enumerate(feats_Q_ln)]
-        # S_m=[s.unsqueeze(0) for s in S]
-        # Q_m=[q.unsqueeze(0) for q in Q]
-
         Q_m,_ = self.embed_gru(c3d_feat_Q, lns_Q)
         S_pos_m,_ = self.embed_gru(c3d_feat_S_pos, lns_S_pos)
         S_neg_m,_ = self.embed_gru(c3d_feat_S_neg, lns_S_neg)
         q_kc_neg=self.align_and_computelogits(Q_m,S_pos_m)
         q_kc_pos=self.align_and_computelogits(Q_m,S_neg_m)
-
 
         return q_kc_pos,q_kc_neg

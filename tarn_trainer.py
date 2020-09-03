@@ -79,7 +79,6 @@ for uidx in range(opt.nupdate):
         writer.add_scalar('Loss/Train_acc',
                       np.mean(moving_avg_prec,0),
                       uidx)
-
         print('Upd: {0}| Loss Train pos/neg: {1} / {2}, acc: {3}'.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],np.mean(moving_avg_prec,0)))
         moving_avg_loss = []
     if uidx%50000==0:
