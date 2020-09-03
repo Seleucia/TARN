@@ -16,7 +16,7 @@ import h5py
 #CUDA_VISIBLE_DEVICES=0 python3 train_svg_lp_drivesim.py
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1986, help='Random seed')
-parser.add_argument('--nupdate', type=int, default=1000000, help='Random seed')
+parser.add_argument('--nupdate', type=int, default=10000000, help='Random seed')
 parser.add_argument('--bsize', type=int, default=5, help='Batch Size')
 parser.add_argument('--feats_gru_hidden_size', type=int, default=256, help='hidden size')
 parser.add_argument('--dml_gru_hidden_size', type=int, default=256, help='hidden size')
@@ -68,7 +68,7 @@ for uidx in range(opt.nupdate):
     neg_loss,pos_loss,neg_acc,pos_acc=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
     moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
     moving_avg_prec.append([pos_acc,neg_acc])
-    if uidx%5000==0:
+    if uidx%10000==0:
         writer.add_scalar('Loss/Train_pos',
                       np.mean(moving_avg_loss,0)[0],
                       uidx)
@@ -86,7 +86,7 @@ for uidx in range(opt.nupdate):
         print('Upd: {0}| Loss Train pos/neg: {1} / {2}, acc: {3} / {4} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
                                                                                 np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
         moving_avg_loss = []
-    if uidx%50000==0:
+    if uidx%100000==0:
         mhe.save_model(uidx,opt,mdl_tarn,mm_opt)
 writer.close()
 
