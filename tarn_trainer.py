@@ -34,13 +34,9 @@ torch.cuda.manual_seed_all(opt.seed)
 
 
 dsL=dsLoader(iot.get_c3d_feats_hdf5())
-mdl_tarn=m_tarn(opt.input_size,opt.feats_gru_hidden_size,opt.dml_gru_hidden_size).cuda()
-mm_opt=optim.Adam(mdl_tarn.parameters(), lr=opt.lr, weight_decay=opt.wd)
 
 
-criterion = nn.BCELoss()
-
-def test():
+def test(mdl_tarn,mm_opt,uidx):
     mdl_tarn.eval()
     aname_lst=dsL.kshot_class_set
     dic_results=[]
@@ -57,34 +53,9 @@ def test():
         prediction=sorted(dic_score.items(), key=lambda x: x[1], reverse=True)[0][0]
         dic_results.append(prediction==anames_Q[0])
         # print(prediction,anames_Q[0])
-    print('Test Acc: {0}'.format(np.mean(dic_results)))
-
-
-def finetune(uidx):
-    print('Fine Tuning Model for {0}.....'.format(uidx))
-    moving_avg_loss=[]
-    for fuidx in range(1000):
-        c3d_feat_Q, anames_Q, lns_Q, Q_kys, c3d_feat_S_pos, anames_S_pos, lns_S_pos, c3d_feat_S_neg, anames_S_neg, lns_S_neg = dsL.get_batch(
-            opt.bsize, fuidx, stream_mode=2)
-        neg_loss, pos_loss, neg_acc, pos_acc = train(c3d_feat_Q, lns_Q, c3d_feat_S_pos, lns_S_pos, c3d_feat_S_neg,
-                                                     lns_S_neg, target_ones, target_zeros, fuidx)
-        moving_avg_loss.append([pos_loss.item(), neg_loss.item()])
-        moving_avg_prec.append([pos_acc, neg_acc])
-
-    print('Fine-Tuned: {0}| Loss Train pos/neg  Loss: {1} / {2}, acc: {3} / {4} '.format(uidx,
-                                                                                  np.mean(moving_avg_loss, 0)[
-                                                                                      0],
-                                                                                  np.mean(moving_avg_loss, 0)[
-                                                                                      1],
-                                                                                  np.mean(moving_avg_prec, 0)[
-                                                                                      0],
-                                                                                  np.mean(moving_avg_prec, 0)[
-                                                                                      1]))
-
-
-
+    return dic_results
 # --------- training funtions ------------------------------------
-def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
+def train(mdl_tarn,mm_opt,criterion,c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
     mdl_tarn.train()
     mm_opt.zero_grad()
     q_kc_pos =mdl_tarn(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos)
@@ -99,44 +70,80 @@ def train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,tar
     return neg_loss,pos_loss,neg_acc,pos_acc
 
 
+def finetune(mdl_tarn,mm_opt,uidx):
+    criterion = nn.BCELoss()
+    moving_avg_prec=[]
+    moving_avg_loss=[]
+    for fuidx in range(2000):
+        c3d_feat_Q, anames_Q, lns_Q, Q_kys, c3d_feat_S_pos, anames_S_pos, lns_S_pos, c3d_feat_S_neg, anames_S_neg, lns_S_neg = dsL.get_batch(
+            opt.bsize, fuidx, stream_mode=2)
+        neg_loss, pos_loss, neg_acc, pos_acc = train(mdl_tarn,mm_opt,criterion,c3d_feat_Q, lns_Q, c3d_feat_S_pos, lns_S_pos, c3d_feat_S_neg,
+                                                     lns_S_neg, target_ones, target_zeros, fuidx)
+        moving_avg_loss.append([pos_loss.item(), neg_loss.item()])
+        moving_avg_prec.append([pos_acc, neg_acc])
+
+    return moving_avg_loss,moving_avg_prec
+
+
+
+def eval_model(mpath, uidx):
+    nrepeat=10
+    for nrep_idx in range(nrepeat):
+        _, mdl_tarn, mm_opt = mhe.load_model(mpath)
+        dsL.kshot_sample_set(kshot_seed=nrep_idx)
+        moving_avg_loss,moving_avg_prec=finetune(mdl_tarn, mm_opt, uidx)
+        dic_results=test(mdl_tarn, mm_opt, uidx)
+
+        avg_loss=np.mean( moving_avg_loss,0)
+        avg_prec=np.mean( moving_avg_prec,0)
+        print('Mdl: {0}| Train Loss: {1:4f} / {2:4f}, acc: {3:4f} / {4:4f} '.format(uidx,avg_loss[0],avg_loss[1],avg_prec[0],avg_prec[1]),
+              ' >>> Test Acc: {0:4f}'.format(np.mean(dic_results)),
+              ' Class: [{0}]'.format(' ,'.join(dsL.kshot_class_set)))
+
+def Run():
+    moving_avg_loss = []
+    moving_avg_prec = []
+    mdl_tarn=m_tarn(opt.input_size,opt.feats_gru_hidden_size,opt.dml_gru_hidden_size).cuda()
+    mm_opt=optim.Adam(mdl_tarn.parameters(), lr=opt.lr, weight_decay=opt.wd)
+    criterion = nn.BCELoss()
+    for uidx in range(opt.nupdate):
+        c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=0)
+        neg_loss,pos_loss,neg_acc,pos_acc=train(mdl_tarn,mm_opt,criterion,c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
+        moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
+        moving_avg_prec.append([pos_acc,neg_acc])
+        if uidx%50000==0:
+            writer.add_scalar('Loss/Train_pos',
+                          np.mean(moving_avg_loss,0)[0],
+                          uidx)
+
+            writer.add_scalar('Loss/Train_neg',
+                          np.mean(moving_avg_loss,0)[1],
+                          uidx)
+
+            writer.add_scalar('Loss/Train_pos_acc',
+                          np.mean(moving_avg_prec,0)[0],
+                          uidx)
+            writer.add_scalar('Loss/Train_neg_acc',
+                          np.mean(moving_avg_prec,0)[1],
+                          uidx)
+            print('Upd: {0}| Loss Train pos/neg  Loss: {1:4f} / {2:4f}, acc: {3:4f} / {4:4f} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
+                                                                                    np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
+            moving_avg_loss = []
+            moving_avg_prec = []
+        if uidx % 100000 == 0:
+            #We should save and reaload model.
+            mpath=mhe.save_model(uidx, opt, mdl_tarn, mm_opt,show_txt=False)
+            eval_model(mpath, uidx)
+            _, mdl_tarn, mm_opt=mhe.load_model(mpath)
 
 
 writer = SummaryWriter(iot.get_wd()+'/runs/mdl')
 writer.add_text('DataSet', 'Training Samples:{0}'.format(len(dsL.train_samples)))
 writer.add_text('DataSet', 'Test Samples:{0}'.format(len(dsL.test_samples)))
 print('Training Stated....')
-moving_avg_loss=[]
-moving_avg_prec=[]
+
 target_zeros = torch.zeros((opt.bsize, 1)).cuda()
 target_ones = torch.ones((opt.bsize, 1)).cuda()
-for uidx in range(opt.nupdate):
-    c3d_feat_Q,anames_Q,lns_Q,Q_kys,c3d_feat_S_pos,anames_S_pos,lns_S_pos,c3d_feat_S_neg,anames_S_neg,lns_S_neg= dsL.get_batch(opt.bsize,uidx,stream_mode=0)
-    neg_loss,pos_loss,neg_acc,pos_acc=train(c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx)
-    moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
-    moving_avg_prec.append([pos_acc,neg_acc])
-    if uidx%50000==0:
-        writer.add_scalar('Loss/Train_pos',
-                      np.mean(moving_avg_loss,0)[0],
-                      uidx)
-
-        writer.add_scalar('Loss/Train_neg',
-                      np.mean(moving_avg_loss,0)[1],
-                      uidx)
-
-        writer.add_scalar('Loss/Train_pos_acc',
-                      np.mean(moving_avg_prec,0)[0],
-                      uidx)
-        writer.add_scalar('Loss/Train_neg_acc',
-                      np.mean(moving_avg_prec,0)[1],
-                      uidx)
-        print('Upd: {0}| Loss Train pos/neg  Loss: {1} / {2}, acc: {3} / {4} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
-                                                                                np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
-        moving_avg_loss = []
-    if uidx % 100000 == 0:
-        #We should save and reaload model.
-        finetune(uidx)
-        test()
-    if uidx%100000==0:
-        mhe.save_model(uidx,opt,mdl_tarn,mm_opt)
+Run()
 writer.close()
 

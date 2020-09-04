@@ -20,7 +20,7 @@ class dsLoader():
         #                          'P19', 'P20', 'P21', 'P22', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P31']
         # self.train_subject = ['P01', 'P10', 'P16', 'P23', 'P30','P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P12', 'P13', 'P14', 'P15', 'P17',
         #                          'P19', 'P20', 'P21', 'P22', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P31']
-        #
+
         self.train_classes = ['close', 'cut', 'mix', 'move', 'open', 'pour', 'put', 'remove', 'take', 'throw',
                               'turn-on', 'wash']
         self.test_classes = ['adjust', 'check', 'dry', 'empty', 'fill', 'flip', 'insert', 'peel', 'press', 'scoop',
@@ -37,7 +37,6 @@ class dsLoader():
         self.train_action_samples={}
         self.test_action_samples={}
         self.load_hdf(hdf_feats_file)
-        self.kshot_sample_set()
         print('Done...')
 
     def load_hdf(self,hdf_prot_file):
@@ -76,8 +75,8 @@ class dsLoader():
         self.test_aname_cnt={aname:len(self.test_action_samples[aname]) for aname in self.test_action_samples}
         print([len(self.test_action_samples[aname]) for aname in self.test_action_samples])
 
-    def kshot_sample_set(self):
-        random.seed(self.kshot_seed)
+    def kshot_sample_set(self,kshot_seed):
+        random.seed(kshot_seed)
         self.kshot_set_train = {}
         self.kshot_set_test = {}
 
