@@ -54,6 +54,7 @@ def test():
             dic_score[aname]=mean_score
         prediction=sorted(dic_score.items(), key=lambda x: x[1], reverse=True)[0][0]
         dic_results.append(prediction==anames_Q[0])
+        print(prediction,anames_Q[0])
     print('Test Acc: {0}'.format(np.mean(dic_results)))
 
 
