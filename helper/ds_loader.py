@@ -70,6 +70,8 @@ class dsLoader():
                 tmp_seq_ky_lst = self.test_action_samples[aname]
                 for seq_ky in tmp_seq_ky_lst:
                     del self.test_samples[seq_ky]
+
+                self.test_classes.remove(aname)
                 del self.test_action_samples[aname]
 
         self.test_aname_cnt={aname:len(self.test_action_samples[aname]) for aname in self.test_action_samples}
