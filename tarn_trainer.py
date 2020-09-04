@@ -45,7 +45,7 @@ def test():
     aname_lst=dsL.kshot_class_set
     dic_results=[]
     for bidx in range(len(dsL.test_samples)):
-        c3d_feat_Q, anames_Q, lns_Q=dsL.get_test_samples('Nan',0,stream_mode=2)
+        c3d_feat_Q, anames_Q, lns_Q=dsL.get_test_samples('Nan',bidx,stream_mode=2)
         dic_score={}
         for aname in aname_lst:
             c3d_feat_S, anames_S, lns_S=dsL.get_test_samples(aname,0,stream_mode=0)
