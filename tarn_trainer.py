@@ -61,7 +61,7 @@ def test():
 
 
 def finetune(uidx):
-    print('Fine tuning model.....')
+    print('Fine Tuning Model for {0}.....'.format(uidx))
     moving_avg_loss=[]
     for fuidx in range(1000):
         c3d_feat_Q, anames_Q, lns_Q, Q_kys, c3d_feat_S_pos, anames_S_pos, lns_S_pos, c3d_feat_S_neg, anames_S_neg, lns_S_neg = dsL.get_batch(
