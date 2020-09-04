@@ -101,7 +101,7 @@ def eval_model(mpath, uidx):
         print('Mdl: {0}| Train Loss: {1:4f} / {2:4f}, acc: {3:4f} / {4:4f} '.format(uidx,avg_loss[0],avg_loss[1],avg_prec[0],avg_prec[1]),
               ' >>> Test Acc: {0:4f}'.format(results[-1]),
               ' Class: [{0}]'.format(' ,'.join(dsL.kshot_class_set)))
-        print('Over all Test Acc: {0:4f}'.format(np.mean(results)))
+    print('Over all Test Acc: {0:4f}'.format(np.mean(results)))
 
 def Run():
     moving_avg_loss = []
