@@ -44,14 +44,16 @@ def test():
     mdl_tarn.eval()
     aname_lst=dsL.kshot_class_set
     dic_results=[]
-    for bidx in range(len(dsL.test_samples)):
+    for bidx in range(len(dsL.kshot_set_test)):
         c3d_feat_Q, anames_Q, lns_Q=dsL.get_test_samples('Nan',bidx,stream_mode=2)
         dic_score={}
+        # print('Query Set',anames_Q)
         for aname in aname_lst:
             c3d_feat_S, anames_S, lns_S=dsL.get_test_samples(aname,0,stream_mode=0)
             q_kc = mdl_tarn(c3d_feat_Q, lns_Q, c3d_feat_S, lns_S)
             mean_score=q_kc.detach().cpu().numpy().mean()
             dic_score[aname]=mean_score
+            # print('Support Set',aname,anames_S)
         prediction=sorted(dic_score.items(), key=lambda x: x[1], reverse=True)[0][0]
         dic_results.append(prediction==anames_Q[0])
         # print(prediction,anames_Q[0])

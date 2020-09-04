@@ -16,11 +16,11 @@ class dsLoader():
         self.train_subject = ['P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P12', 'P13', 'P14', 'P15', 'P17',
                                  'P19', 'P20', 'P21', 'P22', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P31']
 
-        # self.test_subject = ['P01', 'P10', 'P16', 'P23', 'P30','P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P12', 'P13', 'P14', 'P15', 'P17',
-        #                          'P19', 'P20', 'P21', 'P22', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P31']
-        # self.train_subject = ['P01', 'P10', 'P16', 'P23', 'P30','P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P12', 'P13', 'P14', 'P15', 'P17',
-        #                          'P19', 'P20', 'P21', 'P22', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P31']
-        # #
+        self.test_subject = ['P01', 'P10', 'P16', 'P23', 'P30','P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P12', 'P13', 'P14', 'P15', 'P17',
+                                 'P19', 'P20', 'P21', 'P22', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P31']
+        self.train_subject = ['P01', 'P10', 'P16', 'P23', 'P30','P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P12', 'P13', 'P14', 'P15', 'P17',
+                                 'P19', 'P20', 'P21', 'P22', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P31']
+        #
         self.train_classes = ['close', 'cut', 'mix', 'move', 'open', 'pour', 'put', 'remove', 'take', 'throw',
                               'turn-on', 'wash']
         self.test_classes = ['adjust', 'check', 'dry', 'empty', 'fill', 'flip', 'insert', 'peel', 'press', 'scoop',
@@ -90,6 +90,12 @@ class dsLoader():
             self.kshot_train_action_samples[aname]=full_lst[:self.kshot]
             self.kshot_test_action_samples[aname]=full_lst[self.kshot:]
 
+            for seq_ky in self.kshot_test_action_samples[aname]:
+                self.kshot_set_test[seq_ky]=self.test_samples[seq_ky]
+
+            for seq_ky in self.kshot_train_action_samples[aname]:
+                self.kshot_set_train[seq_ky]=self.test_samples[seq_ky]
+
     def get_niter(self,bsize,stream_mode=1):
         if stream_mode == 0:
            niter=-1
@@ -131,7 +137,7 @@ class dsLoader():
             c3d_feat_Q, anames_Q, lns_Q = self.get_by_kylst(Q_kys, sample_set)
             return c3d_feat_Q, anames_Q, lns_Q
         elif stream_mode == 2:  # return support set
-            tmp_Q_kys=list(self.test_samples.keys())
+            tmp_Q_kys=list(self.kshot_set_test.keys())
             Q_kys = tmp_Q_kys[bidx]
             Q_kys=[Q_kys]*self.kshot
             c3d_feat_Q, anames_Q, lns_Q = self.get_by_kylst(Q_kys, sample_set)
