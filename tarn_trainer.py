@@ -115,22 +115,16 @@ def Run():
         moving_avg_loss.append([pos_loss.item(),neg_loss.item()])
         moving_avg_prec.append([pos_acc,neg_acc])
         if uidx%50000==0:
-            writer.add_scalar('Loss/Train_pos',
-                          np.mean(moving_avg_loss,0)[0],
-                          uidx)
+            avg_loss = np.mean(moving_avg_loss, 0)
+            avg_prec = np.mean(moving_avg_prec, 0)
+            writer.add_scalar('Loss/Train_pos',avg_loss[0],uidx)
 
-            writer.add_scalar('Loss/Train_neg',
-                          np.mean(moving_avg_loss,0)[1],
-                          uidx)
+            writer.add_scalar('Loss/Train_neg',avg_loss[1],uidx)
 
-            writer.add_scalar('Loss/Train_pos_acc',
-                          np.mean(moving_avg_prec,0)[0],
-                          uidx)
-            writer.add_scalar('Loss/Train_neg_acc',
-                          np.mean(moving_avg_prec,0)[1],
-                          uidx)
-            print('Upd: {0}| Loss Train pos/neg  Loss: {1:4f} / {2:4f}, acc: {3:4f} / {4:4f} '.format(uidx, np.mean(moving_avg_loss,0)[0], np.mean(moving_avg_loss,0)[1],
-                                                                                    np.mean(moving_avg_prec,0)[0],np.mean(moving_avg_prec,0)[1]))
+            writer.add_scalar('Loss/Train_pos_acc',avg_prec[0],uidx)
+            writer.add_scalar('Loss/Train_neg_acc',avg_prec[1],uidx)
+            print('Upd: {0}| Loss Train pos/neg  Loss: {1:4f} / {2:4f}, acc: {3:4f} / {4:4f} '.format(uidx, avg_loss[0], avg_loss[1],
+                                                                                    avg_prec[0],avg_prec[1]))
             moving_avg_loss = []
             moving_avg_prec = []
         if uidx % 100000 == 0:

@@ -145,6 +145,7 @@ class dsLoader():
             return c3d_feat_Q, anames_Q, lns_Q
 
     def get_batch(self,bsize,uidx,stream_mode=0):
+        random.seed(uidx)
         nsample_per_batch=self.kshot
         nclass_to_be_used=2
         if stream_mode==0:
