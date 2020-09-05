@@ -1,7 +1,6 @@
 data/
 models/
 runs/mdl/
-classifier_mdl/runs/
 .idea/
 _pycache__/
 
@@ -11,6 +10,7 @@ _pycache__/
 *.pyc
 *.hdf5
 
+events.*
 # image:
 *.png
 *.jpeg
