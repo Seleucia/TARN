@@ -3,6 +3,7 @@ import sys
 # sys.setdefaultencoding('utf-8')
 import h5py
 
+#checking saved files.
 hdf_file='/media/hc/Data/all/PycharmProjects/TARN/data/c3d_features_19.hdf5'
 
 

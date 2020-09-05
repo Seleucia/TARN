@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+#implementation of TARN attention mechanism.
 class TARN(nn.Module):
     def __init__(self, N=10, input_size=4096,feats_gru_hidden_size=256,dml_gru_hidden_size=256):
         super(TARN, self).__init__()
