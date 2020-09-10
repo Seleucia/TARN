@@ -25,7 +25,7 @@ class dsLoader():
         self.train_classes = ['open', 'take', 'take', 'cut', 'turn-on', 'put', 'close', 'wash','mix', 'pour']
         self.test_classes = ['inspect-read', 'operate', 'move-around', 'spread', 'turn-off', 'divide-pull-apart', 'clean-wipe', 'compress', 'crack', 'squeeze']
 
-        self.verb_dic = self.get_verbdic()
+        # self.verb_dic = self.get_verbdic()
 
         self.device=device
 
