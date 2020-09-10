@@ -9,13 +9,15 @@ import helper.utils  as ut
 import helper.mhelper as mhe
 import argparse
 from tarn import TARN as m_tarn
-from helper.ds_loader  import dsLoader
+from helper.ds_loader_epic  import dsLoader  as dsLoadeEpic
+from helper.ds_loader_gaze  import dsLoader as dsLoaderGaze
 import h5py
 
 
 #CUDA_VISIBLE_DEVICES=0 python3 train_svg_lp_drivesim.py
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1986, help='Random seed')
+parser.add_argument('--ds', default='gaze', help='DataSet: [epic,gaze]')
 parser.add_argument('--nupdate', type=int, default=10000000, help='Random seed')
 parser.add_argument('--bsize', type=int, default=5, help='Batch Size')
 parser.add_argument('--feats_gru_hidden_size', type=int, default=256, help='hidden size')
@@ -33,7 +35,10 @@ torch.manual_seed(opt.seed)
 torch.cuda.manual_seed_all(opt.seed)
 
 
-dsL=dsLoader(iot.get_c3d_feats_hdf5())
+if opt.ds=='epic':
+    dsL=dsLoadeEpic(iot.get_c3d_feats_hdf5(opt.ds))
+else:
+    dsL=dsLoaderGaze(iot.get_c3d_feats_hdf5(opt.ds))
 
 
 def test(mdl_tarn,mm_opt,uidx):
@@ -129,12 +134,12 @@ def Run():
             moving_avg_prec = []
         if uidx % 100000 == 0:
             #We should save and reaload model.
-            mpath=mhe.save_model(uidx, opt, mdl_tarn, mm_opt,show_txt=False)
+            mpath=mhe.save_model(uidx, opt, mdl_tarn, mm_opt,opt.ds,show_txt=False)
             eval_model(mpath, uidx)
             _, mdl_tarn, mm_opt=mhe.load_model(mpath)
 
 
-writer = SummaryWriter(iot.get_wd()+'/runs/mdl')
+writer = SummaryWriter(iot.get_wd()+'/runs/{0}/mdl'.format(opt.ds))
 writer.add_text('DataSet', 'Training Samples:{0}'.format(len(dsL.train_samples)))
 writer.add_text('DataSet', 'Test Samples:{0}'.format(len(dsL.test_samples)))
 print('Training Stated....')

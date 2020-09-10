@@ -1,9 +1,9 @@
 import torch
 import helper.io_utils as iot
 
-def save_model(uidx,prms,mmodule,mm_opt,show_txt=True):
+def save_model(uidx,prms,mmodule,mm_opt,ds,show_txt=True):
     # save the model
-    mpath = iot.get_wd()+'/models/model_{0}.pth'.format(uidx)
+    mpath = iot.get_wd()+'/models/{0}/model_{1}.pth'.format(ds,uidx)
     if show_txt==True:
         print('Saving model {0}'.format(mpath))
     save_dic={}

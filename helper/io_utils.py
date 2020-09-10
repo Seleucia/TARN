@@ -13,17 +13,18 @@ def get_wd():
         data_folder = '/home/cskn/PycharmProjects/TARN/'
     return data_folder
 
-def get_c3d_feats_hdf5():
+def get_c3d_feats_hdf5(ds):
+
     if socket.gethostname() == 'coskunh':
-        hdf_file = '/media/hc/Data/all/PycharmProjects/TARN/data/cnt-2000_c3d_features.hdf5'
+        if ds =='epic':
+            hdf_file = '/media/hc/Data/all/PycharmProjects/TARN/data/{0}/cnt-2000_c3d_features.hdf5'.format(ds)
+        elif ds =='gaze':
+            hdf_file = '/media/hc/Data/all/PycharmProjects/TARN/data/{0}/cnt-999_c3d_features.hdf5'.format(ds)
         # hdf_file = '/media/hc/Data/all/PycharmProjects/TARN/data/cnt-28472_c3d_features.hdf5'
     elif socket.gethostname() == 'wscskn':
-        hdf_file = '/mnt/4tb/tpami/c3d_feats_hlyr-7_sb-2/cnt-28472_c3d_features.hdf5'
+        if ds == 'epic':
+            hdf_file = '/mnt/4tb/tpami/{0}/c3d_feats_hlyr-7_sb-2/cnt-28472_c3d_features.hdf5'.format(ds)
+        elif ds == 'gaze':
+            hdf_file = '/mnt/4tb/tpami/{0}/c3d_feats_hlyr-7_sb-2/cnt-10321_c3d_features.hdf5'.format(ds)
     return hdf_file
 
-def get_hdf5_prot_vector():
-    if socket.gethostname() == 'coskunh':
-        hdf_file = get_wd()+'/data/feats_class_uidx-5000.pkl'
-    elif socket.gethostname() == 'wscskn':
-        hdf_file = get_wd()+'/data/feats_class_uidx-80000.pkl'
-    return hdf_file
