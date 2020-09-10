@@ -14,7 +14,6 @@ def get_wd():
     return data_folder
 
 def get_c3d_feats_hdf5(ds):
-
     if socket.gethostname() == 'coskunh':
         if ds =='epic':
             hdf_file = '/media/hc/Data/all/PycharmProjects/TARN/data/{0}/cnt-2000_c3d_features.hdf5'.format(ds)
