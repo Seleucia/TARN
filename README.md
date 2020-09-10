@@ -19,5 +19,12 @@ mkdir models && mkdir models/epic && mkdir models/gaze
 pip install -r requirements.txt
 python tarn_trainer.py
 ```
+
+#Todo list
+
+
 #Contact
 email: name.lastname@tum.de
+
+#Citation
+Paper: Bishay, Mina, Georgios Zoumpourlis, and Ioannis Patras. "TARN: Temporal Attentive Relation Network for Few-Shot and Zero-Shot Action Recognition." Accepted for BMVC, 2019.
