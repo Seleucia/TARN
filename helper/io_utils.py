@@ -25,6 +25,6 @@ def get_c3d_feats_hdf5(ds):
         if ds == 'epic':
             hdf_file = '/mnt/4tb/tpami/{0}/c3d_feats_hlyr-7_sb-2/cnt-28472_c3d_features.hdf5'.format(ds)
         elif ds == 'gaze':
-            hdf_file = '/mnt/4tb/tpami/{0}/c3d_feats_hlyr-7_sb-2/cnt-10321_c3d_features.hdf5'.format(ds)
+            hdf_file = '/mnt/4tb/tpami/{0}/c3d_feats_hlyr-7_sb-1/cnt-10321_c3d_features.hdf5'.format(ds)
     return hdf_file
 
