@@ -159,6 +159,7 @@ class dsLoader():
     def get_batch(self,bsize,uidx,stream_mode=0):
         random.seed(uidx)
         nsample_per_batch=self.kshot
+        nneg_samples_per_class=int(self.kshot/self.nclass)
         nclass_to_be_used=2
         if stream_mode==0:
             S_pos_kys = []
@@ -173,8 +174,8 @@ class dsLoader():
             #get negative ones
             for aidx,aname in enumerate(sel_alist[1:]):
                 kys_lst=self.train_action_samples[aname]
-                sel_kys = random.sample(kys_lst, 1)[0]
-                S_neg_kys.append(sel_kys)
+                sel_kys = random.sample(kys_lst, nneg_samples_per_class)
+                S_neg_kys.extend(sel_kys)
             sample_set=self.train_samples
         elif stream_mode==1: #data stream for training
             sample_set = self.test_samples
@@ -194,8 +195,8 @@ class dsLoader():
 
             for aidx,aname in enumerate(sel_alist[1:]):
                 kys_lst=self.kshot_train_action_samples[aname]
-                sel_kys = random.sample(kys_lst, 1)[0]
-                S_neg_kys.append(sel_kys)
+                sel_kys = random.sample(kys_lst, nneg_samples_per_class)
+                S_neg_kys.extend(sel_kys)
             if len(S_neg_kys)<self.kshot:
                nmissing=self.kshot-len(S_neg_kys)
                for mis_idx in range(nmissing):
@@ -203,8 +204,6 @@ class dsLoader():
                    kys_lst = self.kshot_train_action_samples[aname]
                    sel_kys = random.sample(kys_lst, 1)[0]
                    S_neg_kys.append(sel_kys)
-
-
 
         c3d_feat_Q,anames_Q,lns_Q=self.get_by_kylst(Q_kys, sample_set)
         c3d_feat_S_pos,anames_S_pos,lns_S_pos=self.get_by_kylst(S_pos_kys, sample_set)
