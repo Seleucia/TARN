@@ -13,7 +13,6 @@ from helper.ds_loader_epic  import dsLoader  as dsLoadeEpic
 from helper.ds_loader_gaze  import dsLoader as dsLoaderGaze
 import h5py
 
-
 #CUDA_VISIBLE_DEVICES=0 python3 train_svg_lp_drivesim.py
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1986, help='Random seed')
@@ -59,6 +58,8 @@ def test(mdl_tarn,mm_opt,uidx):
         dic_results.append(prediction==anames_Q[0])
         # print(prediction,anames_Q[0])
     return dic_results
+
+
 # --------- training funtions ------------------------------------
 def train(mdl_tarn,mm_opt,criterion,c3d_feat_Q,lns_Q,c3d_feat_S_pos,lns_S_pos,c3d_feat_S_neg,lns_S_neg,target_ones,target_zeros,uidx):
     mdl_tarn.train()
@@ -92,7 +93,7 @@ def finetune(mdl_tarn,mm_opt,uidx):
 
 
 def eval_model(mpath, uidx):
-    nrepeat=20
+    nrepeat=30
     results=[]
     for nrep_idx in range(nrepeat):
         _, mdl_tarn, _ = mhe.load_model(mpath)
@@ -134,7 +135,7 @@ def Run():
                                                                                     avg_prec[0],avg_prec[1]))
             moving_avg_loss = []
             moving_avg_prec = []
-        if uidx % 100000 == 0:
+        if uidx % 50000 == 0:
             #We should save and reaload model.
             mpath=mhe.save_model(uidx, opt, mdl_tarn, mm_opt,opt.ds,show_txt=False)
             eval_model(mpath, uidx)

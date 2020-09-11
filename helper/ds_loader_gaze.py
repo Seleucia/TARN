@@ -90,7 +90,9 @@ class dsLoader():
         print('Test Actions: ',[aname+': '+str(len(self.test_action_samples[aname])) for aname in self.test_action_samples])
 
     def kshot_sample_set(self,kshot_seed):
+        #store  10 samples
         random.seed(kshot_seed)
+        maxshot=10
         self.kshot_set_train = {}
         self.kshot_set_test = {}
 
