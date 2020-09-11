@@ -92,10 +92,11 @@ def finetune(mdl_tarn,mm_opt,uidx):
 
 
 def eval_model(mpath, uidx):
-    nrepeat=10
+    nrepeat=20
     results=[]
     for nrep_idx in range(nrepeat):
-        _, mdl_tarn, mm_opt = mhe.load_model(mpath)
+        _, mdl_tarn, _ = mhe.load_model(mpath)
+        mm_opt = optim.Adam(mdl_tarn.parameters(), lr=opt.lr, weight_decay=opt.wd)
         dsL.kshot_sample_set(kshot_seed=nrep_idx)
         moving_avg_loss,moving_avg_prec=finetune(mdl_tarn, mm_opt, uidx)
         dic_results=test(mdl_tarn, mm_opt, uidx)
@@ -103,9 +104,10 @@ def eval_model(mpath, uidx):
         avg_loss=np.mean( moving_avg_loss,0)
         avg_prec=np.mean( moving_avg_prec,0)
         results.append(np.mean(dic_results))
-        print('Mdl: {0}| Train Loss: {1:4f} / {2:4f}, acc: {3:4f} / {4:4f} '.format(uidx,avg_loss[0],avg_loss[1],avg_prec[0],avg_prec[1]),
-              ' >>> Test Acc: {0:4f}'.format(results[-1]),
-              ' Class: [{0}]'.format(' ,'.join(dsL.kshot_class_set)))
+        if nrep_idx%5==0:
+            print('Mdl: {0}| Train Loss: {1:4f} / {2:4f}, acc: {3:4f} / {4:4f} '.format(uidx,avg_loss[0],avg_loss[1],avg_prec[0],avg_prec[1]),
+                  ' >>> Test Acc: {0:4f}'.format(results[-1]),
+                  ' Class: [{0}]'.format(' ,'.join(dsL.kshot_class_set)))
     print('Over all Test Acc: {0:4f}'.format(np.mean(results)))
 
 def Run():

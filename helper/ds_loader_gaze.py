@@ -180,7 +180,7 @@ class dsLoader():
         elif stream_mode==1: #data stream for training
             sample_set = self.test_samples
             batch_kys = list(sample_set.keys())[bsize * uidx:bsize * (uidx + 1)]
-        elif stream_mode==2: #data stream for test
+        elif stream_mode==2: #DataStream for fine-tuning...
             sample_set = self.test_samples
             S_pos_kys = []
             S_neg_kys = []
@@ -192,7 +192,6 @@ class dsLoader():
                 sel_kys = random.sample(kys_lst, 2)
                 S_pos_kys.append(sel_kys[0])
                 Q_kys.append(sel_kys[1])
-
             for aidx,aname in enumerate(sel_alist[1:]):
                 kys_lst=self.kshot_train_action_samples[aname]
                 sel_kys = random.sample(kys_lst, nneg_samples_per_class)

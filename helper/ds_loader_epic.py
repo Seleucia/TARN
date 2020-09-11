@@ -190,7 +190,7 @@ class dsLoader():
                    aname=random.sample(sel_alist[1:],1)[0]
                    kys_lst = self.kshot_train_action_samples[aname]
                    sel_kys = random.sample(kys_lst, 1)[0]
-                   S_neg_kys.append(sel_kys)
+                   S_neg_kys.extend(sel_kys)
 
 
 
