@@ -36,9 +36,9 @@ torch.cuda.manual_seed_all(opt.seed)
 
 
 if opt.ds=='epic':
-    dsL=dsLoadeEpic(iot.get_c3d_feats_hdf5(opt.ds))
+    dsL=dsLoadeEpic(iot.get_c3d_feats_hdf5(opt.ds),kshot=opt.kshot,nclass=opt.nclass)
 else:
-    dsL=dsLoaderGaze(iot.get_c3d_feats_hdf5(opt.ds))
+    dsL=dsLoaderGaze(iot.get_c3d_feats_hdf5(opt.ds),kshot=opt.kshot,nclass=opt.nclass)
 
 
 def test(mdl_tarn,mm_opt,uidx):
@@ -144,8 +144,8 @@ writer.add_text('DataSet', 'Training Samples:{0}'.format(len(dsL.train_samples))
 writer.add_text('DataSet', 'Test Samples:{0}'.format(len(dsL.test_samples)))
 print('Training Stated....')
 
-target_zeros = torch.zeros((opt.bsize, 1)).cuda()
-target_ones = torch.ones((opt.bsize, 1)).cuda()
+target_zeros = torch.zeros((opt.kshot, 1)).cuda()
+target_ones = torch.ones((opt.kshot, 1)).cuda()
 Run()
 writer.close()
 
