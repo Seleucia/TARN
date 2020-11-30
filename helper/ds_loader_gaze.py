@@ -22,8 +22,8 @@ class dsLoader():
         # self.train_subject = ['P01', 'P10', 'P16', 'P23', 'P30','P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P12', 'P13', 'P14', 'P15', 'P17',
         #                          'P19', 'P20', 'P21', 'P22', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P31']
 
-        self.train_classes = ['open', 'take', 'take', 'cut', 'turn-on', 'put', 'close', 'wash','mix', 'pour']
-        self.test_classes = ['inspect-read', 'operate', 'move-around', 'spread', 'turn-off', 'divide-pull-apart', 'clean-wipe', 'compress', 'crack', 'squeeze']
+        self.train_classes = ['open', 'take', 'cut', 'turn-on', 'put', 'close', 'wash','mix', 'pour', 'move-around']
+        self.test_classes = ['inspect-read', 'operate', 'spread', 'turn-off', 'divide-pull-apart', 'clean-wipe', 'compress', 'crack', 'squeeze']
 
         # self.verb_dic = self.get_verbdic()
 

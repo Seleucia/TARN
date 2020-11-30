@@ -1,3 +1,3 @@
 import random as rnd
 
-print(rnd.randrange(41,43)+rnd.random())
+print(0.5+rnd.random())
