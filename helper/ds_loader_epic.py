@@ -45,10 +45,11 @@ class dsLoader():
             seq_lst = list(f.keys())
             for seq_ky in seq_lst:
                 subj = seq_ky.split('_')[0]
-                c3d_vectors = f[seq_ky]['c3d_features'].value
+                c3d_vectors = np.asarray(f[seq_ky]['c3d_features'])
                 if len(c3d_vectors.shape)==1:
                     c3d_vectors=np.expand_dims(c3d_vectors,0)
-                aname = f[seq_ky]['aname'].value.split('_')[1]
+                # aname = f[seq_ky]['aname'].value.split('_')[1]
+                aname = np.asarray(f[seq_ky]['aname']).item().__str__().split('_')[1][:-1]
                 if aname in self.train_classes and subj in self.train_subject:
                     self.train_samples[seq_ky] = [c3d_vectors, aname]
                     if aname not in self.train_action_samples:

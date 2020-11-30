@@ -16,7 +16,7 @@ import h5py
 #CUDA_VISIBLE_DEVICES=0 python3 train_svg_lp_drivesim.py
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1986, help='Random seed')
-parser.add_argument('--ds', default='gaze', help='DataSet: [epic,gaze]')
+parser.add_argument('--ds', default='epic', help='DataSet: [epic,gaze]')
 parser.add_argument('--nupdate', type=int, default=10000000, help='Random seed')
 parser.add_argument('--bsize', type=int, default=5, help='Batch Size')
 parser.add_argument('--feats_gru_hidden_size', type=int, default=256, help='hidden size')
