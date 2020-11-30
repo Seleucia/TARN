@@ -50,8 +50,8 @@ class dsLoader():
                     c3d_vectors=np.expand_dims(c3d_vectors,0)
                 # aname = f[seq_ky]['aname'].value.split('_')[1]
                 full_aneme=np.asarray(f[seq_ky]['aname']).item().__str__()
-                aname = full_aneme.split('_')[1][:-1]
-                print(full_aneme,aname)
+                aname = full_aneme.split('_')[1]
+                # print(full_aneme,aname)
                 if aname in self.train_classes and subj in self.train_subject:
                     self.train_samples[seq_ky] = [c3d_vectors, aname]
                     if aname not in self.train_action_samples:
